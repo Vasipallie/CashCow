@@ -13,8 +13,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cookieParser());
-const supalink = [supabase URL here]; // Supabase URL, replace with your own;
-const supakey = [supabase key here]; // Supabase URL and Key, replace with your own
+const supalink = ;
+const supakey = ;
 
 // Supabase setup
 //WARNING - DO NOT PUBLISH Api Keys VIA GITHUB OR ANY PUBLIC REPOSITORY
@@ -75,20 +75,6 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Initialize user in database -DONE
-// CHECK THIS BEFORE PRODUCTION
-function inituser(userid){
-    supabase.from('Companies').insert([{user_id: userid,company:'NULL',Cash: 10000000,Metal: 0,Plastic: 0,Wood: 0,Electricity: 0,Score: 22,OTP: 8988,OTPexpire: '2025-09-26T19:05:21'}
-    ]).then(({ data, error }) => {
-      if (error) {
-        console.error('Error initializing user:', error);
-        return res.render('signup', {error: 'Signup failed erorinit. Try again.' });
-      }
-      console.log('User initialized successfully:', data);
-
-    });
-  }
-
 // Signup -DONE
 //CHECK THIS BEFORE PRODUCTION
 //only for admins so they kinda need to check the database to config user's company
@@ -119,7 +105,15 @@ app.post('/signup', (req, res) => {
     //get user id
     const userId = data.session.user.id;
     console.log('User ID:', userId);
-    inituser(userId);
+    supabase.from('Companies').insert([{user_id: userId,email:loginemail,company:'NULL',Cash: 10000000,Metal: 0,Plastic: 0,Wood: 0,Electricity: 0}
+    ]).then(({ data, error }) => {
+      if (error) {
+        console.error('Error initializing user:', error);
+        res.render('signup', {error: 'Signup failed erorinit. Try again.' });
+      }
+      console.log('User initialized successfully:', data);
+      res.redirect('/home');      
+    });
   });
   });
 });
@@ -129,9 +123,11 @@ app.post('/signup', (req, res) => {
 app.get('/home',checkAuth, async(req, res) => {
   const token = req.cookies.token;
   const uuid= supabase.auth.getUser(token)
+  const uuidi =(await uuid).data.user.id;
   let { data: Companies, error } = await supabase
     .from('Companies')
-    .select('company, Cash, Metal, Plastic, Wood, Electricity');
+    .select('company, Cash, Metal, Plastic, Wood, Electricity')
+    .eq('user_id', uuidi);
   if (error) {
     console.error('Error fetching companies:', error);
     return res.status(500).send('Error fetching companies');
@@ -173,18 +169,16 @@ let { data: Companies, error } = await supabase
     .select('OTP, OTPexpire')
     .eq('user_id', userId)
     .single();
-    
+    console.log(Companies);
   
-  const otp = Companies.OTP.toString().padStart(4, ); // Ensure it's 4 digits
+  const otp = Companies.OTP.toString().padStart(4 , '0' ); // Ensure it's 4 digits
   const block1 = otp.charAt(0);
   const block2 = otp.charAt(1);
   const block3 = otp.charAt(2);
   const block4 = otp.charAt(3);
   // Get expiry date
   const expiryDate = new Date(Companies.OTPexpire);
- res.render('digitoken', {userid:userId,supakey:supakey,supalink:supalink,block1:block1,block2:block2,block3:block3,block4:block4,expiry: expiryDate.toLocaleString('en-IN', {
-    timeZone: 'Asia/Singapore', // Adjust to your timezone
-  })
+ res.render('digitoken', {userid:userId,supakey:supakey,supalink:supalink,block1:block1,block2:block2,block3:block3,block4:block4,expiry: expiryDate
 });
 });
  
