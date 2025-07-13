@@ -130,16 +130,47 @@
         <div class="divi">
             <p class="subtext">Your Current DigiToken (OTP)</p>
             <div class="codeblock">
-                <span class="block h2"><%=block1%></span>
-                <span class="block h2"><%=block2%></span>
-                <span class="block h2"><%=block3%></span>
-                <span class="block h2"><%=block4%></span>
+                <span class="block h2" id="1"><%=block1%></span>
+                <span class="block h2" id="2"><%=block2%></span>
+                <span class="block h2" id="3"><%=block3%></span>
+                <span class="block h2" id="4"><%=block4%></span>
             </div>
-            <p class="subtext">This DigiToken is Valid till <%=expiry%></p>
+            <p class="subtext" id="exp">This DigiToken is Valid till <%=expiry%></p>
 
-            <!-- 
-            <subscript>DigiTokens should not be shared with anyone but the person you are making a business deal with. The security of your DigiTokens are of your responsibility, CashCow is not liable for fraudulent business deals conducted without your knowledge. We urge you to keep these DigiTokens secret</subscript>
-        --> </div>
+            <!-- <subscript>DigiTokens should not be shared with anyone but the person you are making a business deal with. The security of your DigiTokens are of your responsibility, CashCow is not liable for fraudulent business deals conducted without your knowledge. We urge you to keep these DigiTokens secret</subscript> -->
+       </div>
     </div>
+    <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+     
+  const supabase = createClient('<%=supalink%>', '<%=supakey%>');
+   const change = supabase.channel('Companies_changes')
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'Companies',
+        filter: `user_id=eq.<%=locals.userid%>`
+    },
+    (payload) => {
+        const otp = payload.new.OTP.toString().padStart(4, '0'); // Ensure it's 4 digits
+        const block1 = otp.charAt(0);
+        const block2 = otp.charAt(1);
+        const block3 = otp.charAt(2);
+        const block4 = otp.charAt(3);
+        console.log(block1, block2, block3, block4);
+        const expiryDate = new Date(payload.new.OTPexpire);
+        document.getElementById('1').innerHTML = block1;
+        document.getElementById('2').innerHTML = block2;
+        document.getElementById('3').innerHTML = block3;
+        document.getElementById('4').innerHTML = block4;
+        document.getElementById('exp').innerHTML = `This DigiToken is Valid till ${expiryDate.toLocaleString('en-IN', { timeZone: 'Asia/Singapore' })}`;
+    }
+  )
+  .subscribe();
+
+</script>
+
 </body>
 </html>

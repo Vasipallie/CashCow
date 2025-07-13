@@ -13,14 +13,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cookieParser());
-
+const supalink = [supabase URL here]; // Supabase URL, replace with your own;
+const supakey = [supabase key here]; // Supabase URL and Key, replace with your own
 
 // Supabase setup
 //WARNING - DO NOT PUBLISH Api Keys VIA GITHUB OR ANY PUBLIC REPOSITORY
-const supabase = createClient(
-  'https://your-supabase-url.supabase.co', // Replace with your Supabase URL
-  'your-anon-key' // Replace with your Supabase Anon Key
-); 
+const supabase = createClient(supalink, supakey); 
 
 // Middleware data stuff, important for app to run
 app.set('view engine', 'ejs');
@@ -159,21 +157,32 @@ app.get('/home',checkAuth, async(req, res) => {
 // CHECK THIS BEFORE PRODUCTION
 app.get('/digitoken', checkAuth,async(req, res) => {
   //dont touch pls, kinda important
-  //gets the OTP for a specific user becuz the RLS policy allows only the user to see their own OTP or any data for that matter
+  //gets the OTP for the user by token and displays it in 4 blocks
+  //get user id from cookie
+  if (!req.cookies.token) return res.redirect('/login');
+  const token = req.cookies.token;
+  //get user id from supabase
+  const { data: user, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !user?.user) {
+    return res.status(401).send('Unauthorized');
+  }
+  const userId = user.user.id;
+  console.log('User ID:', userId);
 let { data: Companies, error } = await supabase
-  .from('Companies')
-  .select('OTP, OTPexpire');
-  console.log(Companies);
-  //Split the OTP into 4 blocks
-  const otp = Companies[0].OTP.toString().padStart(4, '0'); // Ensure it's 4 digits
+    .from('Companies')
+    .select('OTP, OTPexpire')
+    .eq('user_id', userId)
+    .single();
+    
+  
+  const otp = Companies.OTP.toString().padStart(4, ); // Ensure it's 4 digits
   const block1 = otp.charAt(0);
   const block2 = otp.charAt(1);
   const block3 = otp.charAt(2);
   const block4 = otp.charAt(3);
   // Get expiry date
-  const expiryDate = new Date(Companies[0].OTPexpire);
-//display otp expiration in local timezone
- res.render('digitoken', {block1:block1,block2:block2,block3:block3,block4:block4,expiry: expiryDate.toLocaleString('en-IN', {
+  const expiryDate = new Date(Companies.OTPexpire);
+ res.render('digitoken', {userid:userId,supakey:supakey,supalink:supalink,block1:block1,block2:block2,block3:block3,block4:block4,expiry: expiryDate.toLocaleString('en-IN', {
     timeZone: 'Asia/Singapore', // Adjust to your timezone
   })
 });
@@ -212,36 +221,6 @@ let { data: patents, error } = await supabase
 
 });
 
-// Logout -DONE
-app.get('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.redirect('/');
-}); 
-
-//OTP generation -DONE
-//This will run every 10 minutes for all users
-// It generates a new OTP and sets an expiry time of 10 minutes from now
-//Please set the timezone according to the server's timezone
-cron.schedule('*/10 * * * *', () => {
-  supabase.from('Companies').select('OTP, user_id').then(({ data, error }) => {
-    if (error) {
-      console.error('Error fetching companies:', error);
-      return;
-    }
-    data.forEach(company => {
-      const newOtp = Math.floor(1000 + Math.random() * 9000);
-      const otpExpire = new Date(Date.now() + 10 * 60 * 1000 + 8*60*60*1000 ); // Set expiry to 10 min from now
-      supabase.from('Companies').update({ OTP: newOtp, OTPexpire: otpExpire }).eq('user_id', company.user_id).then(({ error }) => {
-        if (error) {
-          console.error('Error updating OTP:', error);
-        } else {
-          console.log(`Updated OTP for user ${company.user_id}: ${newOtp}`);
-        }
-      });
-    });
-  }); 
-
-});
 
 // Patent submission form -DONE
 app.get('/patentsubmit', checkAuth, (req, res) => {
@@ -281,6 +260,7 @@ app.post('/patentsubmit', checkAuth, async (req, res) => {
   res.redirect('/patentlib');
 });
 
+
 //business deals
 app.get('/businessdeals', checkAuth, (req, res) => {
   //get company name and email from supabase
@@ -307,8 +287,6 @@ app.get('/businessdeals', checkAuth, (req, res) => {
       });
   });
 });
-
-// database for business deals -DONE
 app.post('/businessdeals', checkAuth, async (req, res) => {
   const{ externalemails, dealconditions} = req.body;
   const token = req.cookies.token;
@@ -345,7 +323,7 @@ app.post('/businessdeals', checkAuth, async (req, res) => {
   }
   console.log(`Business deal submitted by ${userId}: ${dealData.dealid}`);
   res.redirect('/OTPverif'+ '/' + dealData.dealid);
-});  
+}); 
 //OTP Verification page -DONE
 app.get('/OTPverif/:id', checkAuth, (req, res) => { const dealId = req.params.id;
   supabase.from('Deals').select('Emails').eq('dealid', dealId).single().then(({ data, error }) => {
@@ -504,7 +482,39 @@ app.get('/Deals/:id', checkAuth, async (req, res) => {
   }
 });
 
+
+// Logout -DONE
+app.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/');
+}); 
+
   
+//OTP generation -DONE
+//This will run every 10 minutes for all users
+// It generates a new OTP and sets an expiry time of 10 minutes from now
+//Please set the timezone according to the server's timezone
+cron.schedule('*/10 * * * *', () => {
+  supabase.from('Companies').select('OTP, user_id').then(({ data, error }) => {
+    if (error) {
+      console.error('Error fetching companies:', error);
+      return;
+    }
+    data.forEach(company => {
+      const newOtp = Math.floor(1000 + Math.random() * 9000);
+      const otpExpire = new Date(Date.now() + 10 * 60 * 1000 + 8*60*60*1000 ); // Set expiry to 10 min from now
+      supabase.from('Companies').update({ OTP: newOtp, OTPexpire: otpExpire }).eq('user_id', company.user_id).then(({ error }) => {
+        if (error) {
+          console.error('Error updating OTP:', error);
+        } else {
+          console.log(`Updated OTP for user ${company.user_id}: ${newOtp}`);
+        }
+      });
+    });
+  }); 
+
+});
+
 // Server start
 // CHECK THIS BEFORE PRODUCTION Make sure to run it on a secure server and port forward for safety
 // Might as well use vercel or something like that
