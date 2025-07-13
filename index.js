@@ -178,7 +178,7 @@ let { data: Companies, error } = await supabase
   })
 });
 });
-
+ 
 //Patent Library -DONE
 // CHECK THIS BEFORE PRODUCTION
 app.get('/patentlib', checkAuth, async (req, res) => {
