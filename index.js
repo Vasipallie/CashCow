@@ -13,8 +13,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cookieParser());
-const supalink = ;
-const supakey = ;
+const supalink = '';
+const supakey = '';
+
 
 // Supabase setup
 //WARNING - DO NOT PUBLISH Api Keys VIA GITHUB OR ANY PUBLIC REPOSITORY
@@ -50,7 +51,6 @@ app.get('/', (req, res) => {
     })
     .catch(() => res.redirect('/login'));
 });
-
 // Login -DONE
 app.get('/login', (req, res) => res.render('login'));
 app.post('/login', (req, res) => {
@@ -74,6 +74,7 @@ app.post('/login', (req, res) => {
     res.redirect('/home');
   });
 });
+
 
 // Signup -DONE
 //CHECK THIS BEFORE PRODUCTION
@@ -118,6 +119,7 @@ app.post('/signup', (req, res) => {
   });
 });
 
+
 // Home (protected) -DONE
 //CHECK THIS BEFORE PRODUCTION
 app.get('/home',checkAuth, async(req, res) => {
@@ -148,8 +150,9 @@ app.get('/home',checkAuth, async(req, res) => {
 
 });
 
+
 // DigiToken page -DONE
-//only checks and displays the OTP for the user 
+// only checks and displays the OTP for the user 
 // CHECK THIS BEFORE PRODUCTION
 app.get('/digitoken', checkAuth,async(req, res) => {
   //dont touch pls, kinda important
@@ -182,6 +185,7 @@ let { data: Companies, error } = await supabase
 });
 });
  
+
 //Patent Library -DONE
 // CHECK THIS BEFORE PRODUCTION
 app.get('/patentlib', checkAuth, async (req, res) => {
@@ -214,8 +218,6 @@ let { data: patents, error } = await supabase
   res.render('patent', { patents: patentList});
 
 });
-
-
 // Patent submission form -DONE
 app.get('/patentsubmit', checkAuth, (req, res) => {
   res.render('patentform');
@@ -255,7 +257,8 @@ app.post('/patentsubmit', checkAuth, async (req, res) => {
 });
 
 
-//business deals
+// Business Deals page -DONE
+// To submit a business deal
 app.get('/businessdeals', checkAuth, (req, res) => {
   //get company name and email from supabase
   const token = req.cookies.token;
@@ -440,7 +443,7 @@ app.get('/Deals/:id', checkAuth, async (req, res) => {
   const dealLink = dealDetails.dealLink;
   const submissionTime = new Date(dealData.submissiontime).toLocaleString( 'EN-IN', {timeZone: 'Asia/Singapore'} )
   const otpVerified = dealData.otpverfied;
-  if (dealData.reject === true) {
+  if (dealData.Reject === true) {
     console.log(`Deal ${dealId} has been rejected.`);
      const reject = 'Deal has been rejected.';
       res.render('dealdetails', {
@@ -451,8 +454,8 @@ app.get('/Deals/:id', checkAuth, async (req, res) => {
       otpVerified: otpVerified,
       reject: reject
   });
-  }else if (dealData.approved === true) {
-    console.log(`Deal ${dealId} is still pending.`);
+  }else if (dealData.Approved === true) {
+    console.log(`Deal ${dealId} is approved.`);
     const reject = 'Deal has been approved.';
     res.render('dealdetails', {
       deal: dealDetails,
@@ -477,11 +480,197 @@ app.get('/Deals/:id', checkAuth, async (req, res) => {
 });
 
 
-// Logout -DONE
-app.get('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.redirect('/');
-}); 
+// Auction Portal
+// Helps place bid on auctions and create new auctions
+app.get('/auction',checkAuth, async (req, res) => {
+  // Fetch auctions from the database and show current bid 
+  const { data: auctions, error } = await supabase
+    .from('Auctions')
+    .select('*')
+    .eq('Available', true); 
+  if (error) {
+    console.error('Error fetching auctions:', error);
+    return res.status(500).send('Error fetching auctions');
+  }
+  if (auctions.length === 0) {
+    return res.render('auction', { auctions: '<p class="h4">No auctions available</p>' });
+  }
+  // Render the auctions in the view
+  let auctionList = '';
+  for (const auction of auctions) {
+    const currentBid = auction.Bids ? Object.values(auction.Bids).reduce((max, bid) => Math.max(max, bid.bid), 0) : 0;
+    const highestBidder = auction.Bids ? Object.values(auction.Bids).find(bid => bid.bid === currentBid)?.bidder : 'No bids yet';
+    //get owner name from Companies table
+    const { data: companyData, error: companyError } = await supabase
+    .from('Companies')
+    .select('company')
+    .eq('user_id', auction.Owner)
+    .single();
+    if (companyError || !companyData) {
+      console.error('Error fetching company:', companyError);
+      return res.status(500).send('Error fetching company');
+    }
+    auction.Owner = companyData.company;
+    auctionList += `
+      <div class="patent-holder">
+                <img src="resources/background.jpg" class="img" alt="Resource Image" />
+                <span class="h4 headin">${auction.Item}</span>
+                <span class="subtext">Qty: ${auction.Qty}</span>
+                <span class="subtext">Owner: ${auction.Owner}</span>
+                <span class="subtext" id="${auction.id}">Current Bid: $ ${currentBid} </span>
+                <span class="subtext">End Time: ${auction.Timeout}</span>
+                <button class="view" onclick="window.location.href = '/auction/${auction.id}';">Bid</button>
+            </div>`;
+  }
+  res.render('auction', { auctions: auctionList, supalink:supalink,supakey:supakey });
+});
+app.get('/auction/:id', checkAuth, async (req, res) => {
+  const auctionId = req.params.id;
+  const { data: auction, error } = await supabase
+    .from('Auctions')
+    .select('*')
+    .eq('id', auctionId)
+    .single();
+  if (error || !auction) {
+    console.error('Error fetching auction:', error);
+    return res.status(404).send('Auction not found');
+  }
+  // Get the current highest bid
+  const currentBid = auction.Bids ? Object.values(auction.Bids).reduce((max, bid) => Math.max(max, bid.bid), 0) : 0;
+  // Get the highest bidder
+  const highestBidder = auction.Bids ? Object.values(auction.Bids).find(bid => bid.bid === currentBid)?.bidder : 'No bids yet';
+  // Render the auction bid page
+  const title = `${auction.Qty} ${auction.Item} Tokens`;
+  //get owner name from Companies table
+  const { data: companyData, error: companyError } = await supabase
+    .from('Companies')
+    .select('company') 
+    .eq('user_id', auction.Owner)
+    .single();
+  if (companyError || !companyData) {
+    console.error('Error fetching company:', companyError);
+    return res.status(500).send('Error fetching company');
+  }
+  res.render('auctionbid', {
+    auctionid: auctionId,
+    title: title,
+    owner: companyData.company,
+    currentBid: currentBid,
+    highestBidder: highestBidder,
+    time: new Date(auction.Timeout).toLocaleString('en-US', { timeZone: 'Asia/Singapore' }),
+    supalink: supalink,
+    supakey: supakey
+  });
+});
+app.post('/placebid', checkAuth, async (req, res) => {
+  const auctionId = req.body.auctionId;
+  console.log(auctionId);
+  const bidAmount = parseFloat(req.body.bidAmount);
+  console.log(bidAmount);
+  if (isNaN(bidAmount) || bidAmount <= 0) {
+    return res.status(400).send('Invalid bid amount');
+  }
+  const token = req.cookies.token;
+  if (!token) return res.status(401).send('Unauthorized');
+  const { data: user, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !user?.user) return res.status(401).send('Unauthorized');
+  const userId = user.user.id;
+  console.log('User ID:', userId);
+  // compare bid amount with current highest bid
+  const { data: auction, error: auctionError } = await supabase
+    .from('Auctions')
+    .select('*')
+    .eq('id', auctionId)
+    .single();
+  if (auctionError || !auction) {
+    console.error('Error fetching auction:', auctionError);
+    return res.status(404).send('Auction not found');
+  }
+  const currentBid = auction.Bids ? Object.values(auction.Bids).reduce((max, bid) => Math.max(max, bid.bid), 0) : 0;
+  if (bidAmount <= currentBid) {
+    return res.status(400).send('Bid amount must be higher than the current bid');
+  }
+  // Check if the user has enough funds
+  const { data: company, error: companyError } = await supabase
+    .from('Companies')
+    .select('Cash')
+    .eq('user_id', userId)
+    .single();
+  if (companyError || !company) {
+    console.error('Error fetching company:', companyError);
+    return res.status(500).send('Error fetching company');
+  }
+  if (company.Cash < bidAmount) {
+    return res.status(400).send('Insufficient funds to place this bid');
+  }
+  // Place the bid
+  const newBid = {
+    bidder: userId,
+    bid: bidAmount,
+  };
+  //append to bids json field
+  const { data: updatedAuction, error: updateError } = await supabase
+    .from('Auctions')
+    .update({
+      Bids: {
+        ...auction.Bids,
+        [userId]: newBid,
+      },
+    })
+    .eq('id', auctionId)
+    .single();
+    res.redirect('/auction')
+});
+//periodic checks to update auction status
+cron.schedule('*/2 * * * *', async () => {
+  const { data: auctions, error } = await supabase
+    .from('Auctions')
+    .select('*')
+    .eq('Available', true);
+  if (error) {
+    console.error('Error fetching auctions:', error);
+    return;
+  }
+  const now = new Date();
+  for (const auction of auctions) {
+    const endTime = new Date(auction.Timeout);
+    if (now >= endTime) {
+      // Auction has ended, update status
+      await supabase
+        .from('Auctions')
+        .update({ Available: false })
+        .eq('id', auction.id);
+      console.log(`Auction ${auction.id} has ended.`);
+      // Check if there are any bids, if exists deduct cash from winner, if the winner has insufficient funds, the next highest bidder will be selected
+      if (auction.Bids && Object.keys(auction.Bids).length > 0) {
+        // Get the highest bid
+        const highestBid = Object.values(auction.Bids).reduce((max, bid) => Math.max(max, bid.bid), 0);
+        const highestBidder = Object.values(auction.Bids).find(bid => bid.bid === highestBid)?.bidder;
+        if (highestBidder) {
+          // Deduct cash from the highest bidder
+          const { data: company, error: companyError } = await supabase
+            .from('Companies')
+            .select('Cash')
+            .eq('user_id', highestBidder)
+            .single();
+          if (companyError || !company) {
+            console.error('Error fetching company:', companyError);
+            continue;
+          }
+          if (company.Cash >= highestBid) {
+            await supabase
+              .from('Companies')
+              .update({ Cash: company.Cash - highestBid })
+              .eq('user_id', highestBidder);
+            console.log(`Deducted $${highestBid} from user ${highestBidder}'s account.`);
+          } else {
+            console.warn(`User ${highestBidder} has insufficient funds for the winning bid of $${highestBid}.`);
+          }
+        }
+      }
+    }
+  }
+});
 
   
 //OTP generation -DONE
@@ -508,6 +697,15 @@ cron.schedule('*/10 * * * *', () => {
   }); 
 
 });
+
+
+// Logout -DONE
+// User logout functionality
+app.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/');
+}); 
+
 
 // Server start
 // CHECK THIS BEFORE PRODUCTION Make sure to run it on a secure server and port forward for safety

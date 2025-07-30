@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlaceBid | CashCow</title>
+  <link rel="icon" type="image/x-icon" href="../resources/favicon.ico">
+  <link rel="stylesheet" href="../universal.css">
+  <style>
+    body{
+        color: #ffffff;
+        display: flex;
+    }
+    .nav{
+        min-height:100vh ;
+        width: 30%;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 1) 51%, rgba(30, 30, 47, 1) 100%);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .imgi{
+        margin-bottom: 10px;
+    }
+    hr{
+        width: 100%;
+        border: 0;
+        height: 1px;
+        background-color: aliceblue;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+    .btn{
+        width:100%;
+        height: 6vh;
+        cursor: pointer;
+        background: #1E201F;
+        color: #ffffff;
+        font-family: 'product';
+        text-align: left;
+        padding: 5px;
+        font-size: 3vh;
+        border-radius: 10px;
+        border: 0;
+        background: linear-gradient(130deg, rgba(30, 32, 31, 1) 56%, rgba(46, 59, 58, 1) 100%) padding-box, linear-gradient(130deg, #7f7f7f, #282a29) border-box;
+        border: 2px solid transparent;
+        margin-bottom: 6px;
+        
+    }
+    .btna{
+        width:100%;
+        height: 6vh;
+        cursor: pointer;
+        background: #1E201F;
+        color: #ffffff;
+        font-family: 'product';
+        text-align: left;
+        padding: 5px;
+        font-size: 3vh;
+        border-radius: 10px;
+        border: 0;
+        background: linear-gradient(180deg,rgba(82, 108, 218, 1) 0%, rgba(44, 75, 205, 1) 24%, rgba(82, 108, 218, 1) 71%, rgba(82, 108, 218, 1) 100%) padding-box, linear-gradient(to right, #2c4bcd, #2c4bcd) border-box;
+        border: 2px solid transparent;
+        margin-bottom: 6px;
+    }
+    .labels{
+        width: 100%;
+        text-align: left;
+        font-size: 2vh;
+        color:#bfbfbf;
+        margin-bottom: 5px;
+    }
+    .main{
+        height: 100vh;
+        width: 80%;
+        padding:20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+    }
+    .subtext{
+        font-size: 2vh;
+    }
+    .boxel{
+        background: linear-gradient(180deg, rgba(20, 33, 61, 1) 51%, rgba(30, 30, 47, 1) 100%);
+        display: flex;
+        flex-direction: row; 
+        border-radius: 10px;
+        border: 2px solid #ffffff; 
+        width: 100%; 
+        height: 80vh;
+     }
+     .details{
+        height: 100%;
+        width: 65%;
+        padding: 10px;
+        border-right: 2px solid #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+     }
+     .placebids{
+        height: 100%;
+        width: 35%;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+     }
+     .bidimg{
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        border: 1px solid #ffffff;
+     }
+     .he2{
+        font-size: 6vh;
+        color: #ffffff;
+        font-family: 'product';
+        margin-top: 10px;
+        text-align: center;
+     }
+     .sub1{
+        font-size: 3vh;
+        color: #ffffff;
+        font-family: 'product';
+        text-align: center;
+     }
+     .close{
+        font-size: 3vh;
+        color: #ffffff;
+        background-color: #1E201F;
+        font-family: 'tfarrow';
+        text-align: center;
+        margin-top: 10px;
+        padding: 6px;
+        border-radius: 10px;
+        border: 0;
+        cursor: pointer;
+        background: linear-gradient(180deg, rgba(82, 108, 218, 1) 0%, rgba(44, 75, 205, 1) 24%, rgba(82, 108, 218, 1) 71%, rgba(82, 108, 218, 1) 100%) padding-box, linear-gradient(to right, #2c4bcd, #2c4bcd) border-box;
+        border: 2px solid transparent;
+        width: 100%;
+     }
+        input {
+            background-color: #111111;
+            border: #e7e6e6 1px solid;
+            border-radius: 6px;
+            width: 100%;
+            height: 45px;
+            padding: 0 15px;
+            color: #ffffff;
+            font-size: 20px;
+            font-family: 'tfarrow', sans-serif;
+            transition: border-color 0.3s ease;
+            margin-top: 5vh;
+        }.logbtn {
+            background-color: #2c4bcd;
+            width: 100%;
+            height: 45px;
+            border-radius: 6px;
+            border: #ffffff 1px solid;
+            margin: 15px auto 0;
+            color: #ffffff;
+            font-size: 24px;
+            font-family: 'TfArrow', sans-serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: block;
+        } 
+             
+        .logbtn:hover {
+            background-color: #1e3ba3;
+            transform: translateY(-2px);
+        }
+        
+        .logbtn:active {
+            transform: translateY(0);
+        }
+
+  </style>
+</head>
+<body>
+    <div class="nav">
+        <img class="imgi" src="../resources/logo-t.png" alt="CashCow Logo" width="90%">
+        <hr>
+        <span class="labels">Menu</span>
+        <button class="btn" onclick="window.location.href = '/home';">Financial Overview</button>
+        <button class="btna" onclick="window.location.href = '/auction';">Auctions</button>
+        <button class="btn" onclick="window.location.href = '/businessdeals';">Business Deals</button>
+        <button class="btn" onclick="window.location.href = '/patentlib';">Patent Library</button>
+        <button class="btn" onclick="window.location.href = '/digitoken';">DigiToken</button>
+        <button class="btn" onclick="window.location.href = '/patentsubmit';">Submit Patent</button>
+         <span class="labels">Logout</span>
+        <button class="btn" onclick="window.location.href = '/logout';">Logout</button>
+    </div> 
+    <div class="main">
+        <div class="boxel">
+            <div class="details">
+                <img class="bidimg" src="https://cdn.motor1.com/images/mgl/lE6OrN/s1/general-motors-ev-lineup.jpg" alt="Auction Image">
+                <span class="he2"><%=locals.title%></span>
+                <span class="sub1">Auction ends at: <%=locals.time%></span>
+                <span class="sub1">Owner: <%=locals.owner%></span>
+                <span class="sub1">Current Bid: $<%=locals.currentBid%></span>
+                <span class="sub1" id="highestbidder">Highest Bidder: <%=locals.highestBidder%></span>
+                <button class="logbtn"style="background-color:#bf2c24;" onclick="window.location.href = '/auction';">Close (X)</button>
+            </div>
+            <div class="placebids">
+                <form action="/placebid" method="POST">
+                    <span class="h3">Place Bid</span>
+                    <hr>
+                    <span class="subtext">Your company funds will only be deducted once the auction ends, if your company does not hold enough funds for your bid, this resource will be allotted to the next highest bidder once the auction ends. Placing bids are final and cannot be removed </span>
+                    <input type="hidden" name="auctionId" value="<%=locals.auctionid%>">
+                    <input type="number" id="bidAmount" name="bidAmount" id="bidAmount" placeholder="Enter your bid amount" min="<%=locals.currentBid+1%>" step="1" required>
+                    <span class="subtext" id="minBidAmount">Minimum bid amount is $<%=locals.currentBid+1%></span>
+                    <button class="logbtn" type="submit">Place Bid</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+        
+    const supabase = createClient('<%=locals.supalink%>', '<%=locals.supakey%>')
+    //subscribe to changes and update the grid
+    const changes = supabase.channel('auctionbid')
+        .on('postgres_changes',
+            {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'Auctions',
+                filter: `id=eq.<%=locals.auctionid%>`
+            },
+            (payload) => {
+                console.log('Change received!', payload);
+                const auctionId = payload.new.id;
+
+                const currentBidElement = document.getElementById('bidAmount');
+
+                const minBidAmount = document.getElementById('minBidAmount');
+                const latestBid = payload.new.Bids;
+                console.log(payload.new.Bids);
+
+                const keys = Object.keys(latestBid);
+                const lastkey = keys[keys.length-1]
+                console.log(lastkey);
+                const bob = latestBid[lastkey];
+                const value = bob.bid;
+
+                if (currentBidElement) {
+                    console.log(`Updating auction ${auctionId} with new bid: $${latestBid}`);
+                    currentBidElement.setAttribute('min', value + 1);
+                    currentBidElement.placeholder = `Enter your bid amount (min $${value + 1})`;
+                    minBidAmount.innerHTML = `Minimum bid amount is $${value + 1}`;
+                    //heighest bidder
+                    const highestBidderElement = document.getElementById('highestbidder');
+                    if (highestBidderElement) {
+                        highestBidderElement.innerHTML = `Highest Bidder: ${bob.bidder}`;
+                    }
+                    
+                }
+            }
+        ).subscribe();
+
+    </script>
+</body>
+</html>

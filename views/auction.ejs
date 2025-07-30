@@ -76,9 +76,6 @@
         width: 80%;
         padding:10px;
     }
-    .subtext{
-        font-size: 3vh;
-    }
     .divi{
         width: 100%;
         height: 30vh;
@@ -100,20 +97,24 @@
     }
     .grid{
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(450px, 10vh));
-        grid-template-rows: repeat(auto-fill, minmax(300px, 10vh));
+        grid-template-columns: repeat(auto-fill, minmax(20vw, 10vh));
+        grid-template-rows: repeat(auto-fill, minmax(45vh, 10vh));
         gap: 10px;
         margin-top: 10px;
         padding: 10px;
+        box-sizing: border-box;
+        height: 90vh; 
+        overflow-y: auto;  
+        overflow-x: hidden; 
     }
     .patent-holder{
         width: 100%;
         height: 100%;
         display: flex; 
         flex-direction: column;
-        background-color: #000000;
+        background: linear-gradient(180deg, rgba(20, 33, 61, 1) 51%, rgba(30, 30, 47, 1) 100%);
         border-radius: 16px;
-        padding: 20px;
+        padding: 15px;
         box-shadow: 0 4px 20px rgba(117, 117, 117, 0.3);
         border: #ffffff 1px solid;
     }
@@ -144,6 +145,18 @@
             background-color: #1e3ba3;
             transform: translateY(-2px);
         }
+        .subtext {
+            font-size: 0.9rem;
+            color: #bfbfbf;
+            margin-top: 5px;
+        }
+        .img{
+            border-radius: 10px;
+            border: #ffffff 1px solid;
+        }
+        .headin{
+            margin-top: 1vh;
+        }
   </style>
 </head>
 <body>
@@ -164,10 +177,47 @@
         <span class="h1" style="font-size: 7vh;" >Auction System</span>
         <hr>
         <div class="grid">
-            <%- auctions %>
+            <%- locals.auctions %>
         </div>
     
     </div>
-    </div>
+    </div> 
+    <script type="module">
+   // Supabase real-time updates to the auction grid, onload the auctions dynamically, on update of database auctions, update the grid
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient('<%=locals.supalink%>', '<%=locals.supakey%>')
+    //subscribe to changes and update the grid
+    const changes = supabase.channel('auction')
+        .on('postgres_changes',
+            {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'Auctions'
+            },
+            (payload) => {
+                console.log('Change received!', payload);
+                // change the current bid for the appropriate auction
+                const auctionId = payload.new.id;
+
+                const currentBidElement = document.getElementById(auctionId);
+                const latestBid = payload.new.Bids;
+                console.log(payload.new.Bids);
+
+                const keys = Object.keys(latestBid);
+                const lastkey = keys[keys.length-1]
+                console.log(lastkey);
+                const bob = latestBid[lastkey];
+                const value = bob.bid;
+
+                if (currentBidElement) {
+                    console.log(`Updating auction ${auctionId} with new bid: $${latestBid}`);
+                    currentBidElement.innerHTML = `Current Bid: $ ${value}`;
+                }
+            }
+        ).subscribe();
+
+
+    </script>
 </body>
 </html>
