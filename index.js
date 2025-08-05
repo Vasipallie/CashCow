@@ -671,7 +671,9 @@ cron.schedule('*/2 * * * *', async () => {
     }
   }
 });
-
+app.get('/Addauction', checkAuth, (req, res) => {
+  res.render('addauction');
+});
   
 //OTP generation -DONE
 //This will run every 10 minutes for all users
@@ -705,6 +707,7 @@ app.get('/logout', (req, res) => {
   res.clearCookie('token');
   res.redirect('/');
 }); 
+
 
 
 // Server start

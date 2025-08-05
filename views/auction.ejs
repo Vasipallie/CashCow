@@ -75,6 +75,7 @@
         height: 100vh;
         width: 80%;
         padding:10px;
+        align-items: left ;
     }
     .divi{
         width: 100%;
@@ -157,6 +158,14 @@
         .headin{
             margin-top: 1vh;
         }
+        .hein{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            align-content: flex-start;
+            width: 100%;
+        }
   </style>
 </head>
 <body>
@@ -174,8 +183,10 @@
         <button class="btn" onclick="window.location.href = '/logout';">Logout</button>
     </div> 
     <div class="main">
-        <span class="h1" style="font-size: 7vh;" >Auction System</span>
-        <hr>
+        <div class="hein">
+            <span class="h1" style="font-size: 7vh;" >Auction System</span><button class="view add-auction-btn" onclick="window.location.href='/Addauction'" >Add auction</button>
+        </div>  
+            <br><hr>
         <div class="grid">
             <%- locals.auctions %>
         </div>
@@ -213,11 +224,6 @@
                 if (currentBidElement) {
                     console.log(`Updating auction ${auctionId} with new bid: $${latestBid}`);
                     currentBidElement.innerHTML = `Current Bid: $ ${value}`;
-                }
-            }
-        ).subscribe();
-
-
     </script>
 </body>
 </html>
