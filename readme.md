@@ -2,5 +2,5 @@
 
 ## Installation
 - clone the repository
-- add supabase details in index.js
+- add supabase details in .env
 - run index.js
