@@ -19,6 +19,7 @@
     "express": "^5.1.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
+    "http": "^0.0.1-security",
     "node-cron": "^4.2.0"
   },
   "devDependencies": {
