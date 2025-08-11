@@ -7,14 +7,18 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import cron from 'node-cron';
 import { time } from 'console';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cookieParser());
-const supalink = '';
-const supakey = '';
+const supalink = process.env.SUPALINK ;
+const supakey = process.env.SUPAKEY ;
 
 
 // Supabase setup
