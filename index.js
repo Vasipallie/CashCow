@@ -91,9 +91,6 @@ app.post('/signup', (req, res) => {
     email: loginemail,
     password: loginpassword
   }).then(({ data, error }) => {
-    if (error) {
-      return res.render('signup', {error: 'Signup failed. Try again.' });
-    }
     supabase.auth.signInWithPassword({
     email: loginemail,
     password: loginpassword
@@ -110,7 +107,7 @@ app.post('/signup', (req, res) => {
     //get user id
     const userId = data.session.user.id;
     console.log('User ID:', userId);
-    supabase.from('Companies').insert([{user_id: userId,email:loginemail,company:'NULL',Cash: 10000000,Metal: 0,Plastic: 0,Wood: 0,Electricity: 0,OTP: 9098, OTPexpire: new Date(Date.now() + 60 * 60 * 1000)}
+    supabase.from('Companies').insert([{user_id: userId,email:loginemail,company:'Mad Inc',Cash: 10000000,Metal: 0,Plastic: 0,Wood: 0,Electricity: 0,OTP: 9098, OTPexpire: new Date(Date.now() + 60 * 60 * 1000)}
     ]).then(({ data, error }) => {
       if (error) {
         console.error('Error initializing user:', error);
