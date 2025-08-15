@@ -223,7 +223,9 @@
 
                 if (currentBidElement) {
                     console.log(`Updating auction ${auctionId} with new bid: $${latestBid}`);
-                    currentBidElement.innerHTML = `Current Bid: $ ${value}`;
+                    currentBidElement.innerHTML = `Current Bid: $ ${value}`;}
+            }
+        ).subscribe();
     </script>
 </body>
 </html>

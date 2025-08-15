@@ -252,9 +252,9 @@ app.post('/patentsubmit', checkAuth, async (req, res) => {
   if (insertError) {
     console.error('Error inserting patent:', insertError);
     return res.status(500).send('Error submitting patent');
-  }
+  } 
   console.log(`Patent submitted by ${Companies.company}: ${patentname}`);
-  res.redirect('/patentlib');
+  res.send('Patent is awaiting manual review.');
 });
 
 
@@ -675,7 +675,58 @@ cron.schedule('*/2 * * * *', async () => {
 app.get('/Addauction', checkAuth, (req, res) => {
   res.render('addauction');
 });
-  
+app.post('/Addauction', checkAuth, async (req, res) => {
+  //get user id
+   const token = req.cookies.token;
+  const uuid= supabase.auth.getUser(token);
+  const uuidi =(await uuid).data.user.id;
+  console.log(uuidi);
+  const { resource, quantity, startingBid } = req.body;
+  //get the resource the user has chosen from the form and compare to see if they have enough resources in their company
+  const { data: company, error: companyError } = await supabase
+    .from('Companies')
+    .select(resource)
+    .eq('user_id', uuidi)
+    .single();
+  if (companyError || !company) {
+    console.error('Error fetching company:', companyError);
+    return res.status(500).send('Error fetching company');
+  }
+  console.log(company[resource])
+  if (quantity>company[resource]) {
+    res.status(400).send(`You do not have enough ${resource} to create this auction.`);
+  }else if(quantity<0){
+    res.status(400).send(`Invalid quantity for ${resource}.`);
+  }
+  //deduct the resource selected
+  await supabase
+    .from('Companies')
+    .update({ [resource]: company[resource] - quantity })
+    .eq('user_id', uuidi);
+  console.log(`Deducted ${quantity} ${resource} from user ${uuidi}'s account.`);
+  //add auction to the db
+const auctionDuration = 15 * 60 * 1000; // 15 minutes in milliseconds by default
+  const { error: auctionError } = await supabase
+    .from('Auctions')
+    .insert({
+      Owner: uuidi,
+      Item: resource,
+      Qty: quantity,
+      Bids:{"915151c9-fed7-46d6-83a3-dc984e2a0d4a": {
+    "bid": startingBid,
+    "bidder": "915151c9-fed7-46d6-83a3-dc984e2a0d4a"
+  }},
+      Timeout: new Date(Date.now() + auctionDuration)
+    });
+  if (auctionError) {
+    console.error('Error adding auction:', auctionError);
+    return res.status(500).send('Error adding auction');
+  }
+  res.send('Auction added successfully'); 
+
+});
+
+
 //OTP generation -DONE
 //This will run every 10 minutes for all users
 // It generates a new OTP and sets an expiry time of 10 minutes from now
@@ -700,7 +751,7 @@ cron.schedule('*/10 * * * *', () => {
   }); 
 
 });
-
+ 
 
 // Logout -DONE
 // User logout functionality

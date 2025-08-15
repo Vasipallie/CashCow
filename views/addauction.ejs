@@ -6,7 +6,7 @@
     <title>Patent Submission | CashCow</title>
     <link rel="icon" type="image/x-icon" href="resources/favicon.ico">
     <link rel="stylesheet" href="universal.css">
-    <style>        
+    <style>
         body {
             color: #ffffff;
             width: 100%;
@@ -41,18 +41,11 @@
             height: auto;
         } 
 
-        
         .details {
             width: 100%;
             display: flex;
             flex-direction: column;
             gap: 15px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
         }
         
         label {
@@ -61,7 +54,8 @@
             color: #ffffff;
         }
         
-        input {
+        input,
+        select {
             background-color: #111111;
             border: #e7e6e6 1px solid;
             border-radius: 6px;
@@ -69,14 +63,16 @@
             height: 45px;
             padding: 0 15px;
             color: #ffffff;
-            font-size: 20px;
+            font-size: 18px;
             font-family: 'tfarrow', sans-serif;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
         }
         
-        input:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #c68dfe;
+            background-color: #222;
         }
         
         .logbtn {
@@ -108,7 +104,6 @@
                 max-width: 90%;
                 padding: 20px;
             }
-            
             .h4 { font-size: 24px; }
             .h5 { font-size: 16px; }
         }
@@ -171,7 +166,6 @@
                 height: 45px;
                 font-size: 18px;
             }
-            
             .progress-line {
                 height:8px;
             }
@@ -187,46 +181,51 @@
             font-size: 2vh;
         }
         
-        .email-field-container {
+        /* Optimized form layout */
+        .auction-form {
+            width: 100%;
             display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
+            flex-direction: column;
+            gap: 20px;
         }
-        
-        .email-field-container input {
-            margin: 0;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-        
-        .remove-email-btn {
-            background-color: #dc2626;
-            color: white;
-            border: none;
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .disclaimer {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #c68dfe;
+            padding: 12px 15px;
             border-radius: 6px;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            flex-shrink: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
-        
-        .remove-email-btn:hover {
-            background-color: #b91c1c;
+
+        .disclaimer ul {
+            margin: 8px 0 0;
+            padding-left: 20px;
         }
-        
-        .h3 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-align: center;
+
+        .disclaimer li {
+            margin-bottom: 5px;
         }
-        
-        .h4 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-        
-        .h5 {
-            font-size: 1.2rem;
+
+        @media(max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+            }
         }
     </style>
 </head>  
@@ -246,20 +245,45 @@
                 <span><%= locals.companyname %></span>
                 <span><%= locals.companyemail %></span>
             </div>
-            <form action="/businessdeals" method="POST">
-                <div class="form-group">
-                    <label for="auctionname">Choose Resource to Auction</label>
-                    <div>
-                        <!-- allow users to pick a resource for auction via radio buttons-->
-                        <input type="radio" id="resource1" name="resource" value="Wood" required>
-                        <label for="resource1">Resource 1</label>
-                        <input type="radio" id="resource2" name="resource" value="Metal">
-                        <label for="resource2">Resource 2</label>
-                        <input type="radio" id="resource3" name="resource" value="Plastic">
-                        <label for="resource3">Resource 3</label>
 
-                    </div> 
-                <button type="submit" class="logbtn h4">Next</button>
+            <!-- Optimized Form -->
+            <form action="/addauction" method="POST" class="auction-form">
+                
+                <!-- Resource -->
+                <div class="form-group">
+                    <label for="resource">Choose Resource to Auction</label>
+                    <select id="resource" name="resource" required>
+                        <option value="" disabled selected>Select a resource</option>
+                        <option value="Wood">Wood</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Electricity">Electricity</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" name="quantity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="minbid">Minimum Bid</label>
+                        <input type="number" id="minbid" name="minbid" min="0" required>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <strong>Disclaimer:</strong>
+                    <ul>
+                        <li>You will not receive this resource back.</li>
+                        <li>If unsold, the resource will be lost.</li>
+                        <li>Only auction excess or unnecessary resources.</li>
+                        <li>Contact an organizer within 10 mins for mistakes — cannot undo later.</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="logbtn h4">Start Auction</button>
             </form>
         </div>
     </div> 
